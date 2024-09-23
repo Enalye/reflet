@@ -1,0 +1,238 @@
+import "img.gr"
+
+event app() {
+    //img();
+    clear(0);
+
+    loop yield {
+        //if(isPressed(Button.up)) {
+            circle(getMouseX(), getMouseY(), 20, true, 2);
+       // }
+
+    /*print("0123456789AÁÀÂÄÆBCÇĈDEÉÈÊËFGĜHĤIÍÌÎÏJĴKLMN", 0, 0, 7);
+
+    print("OÓÒÔÖŒPQRSŜTUÚÙÛÜŬVWXYZ", 0, 15, 7);
+    print("aáàâäæbcçĉdeéèêëfgĝhĥiíìîïjĵk", 0, 30, 7);
+    print("lmnoóòôöœpqrsŝtuúùûüŭvwxyz", 0, 45, 7);
+    print("’.…,;:!?+-* /=≠()[]«»°%", 0, 60, 7);
+
+    print(getMouseX() ~ ", " ~ getMouseY());*/
+    }
+    
+    //lmnoóòôöœpqrsŝtuúùûüŭvwxyz’.…,;:!?+-* /=≠()[]«»°%", 0, 0, 7);
+}
+
+
+/*
+int kills, deaths, grazes;
+event onLoad() {
+    player();
+
+    int spawnDelay = 30;
+
+    loop {
+        clear(1);
+
+        if(spawnDelay > 0) {
+            spawnDelay --;
+        }
+        else {
+            spawnDelay = 100;
+            enm(rand(0, 256), rand(0, 70));
+        }
+        print("Tués: " ~ kills, 0, 0, 3);
+        print("Décès: " ~ deaths, 0, 10, 3);
+        print("Frôlés: " ~ grazes, 0, 20, 3);
+        yield
+    }
+}
+
+class Enemy {
+    int x, y, id;
+    bool hurt?;
+}
+
+function kill(Enemy this) {
+    kills ++;
+    loop(i, 30) {
+        circle(this.x, this.y, 10 + (i / 5), false, 10);
+        yield
+    }
+    let id = enms:findFirst(this);
+    if(id >= 0) {
+        enms:remove(id);
+    }
+    die
+}
+
+array(Enemy) enms;
+task enm(int x, int y) {
+    int shotDelay = 10;
+    int ttl = 300;
+    int life = 10;
+    int moveX, moveY, moveDelay = x, y, 0;
+
+    let this = new Enemy {
+        x = x;
+        y = y;
+    };
+    enms ~= this;
+
+    loop {
+        if(this.hurt?) {
+            life --;
+            if(life < 0)
+                this:kill;
+            this.hurt? = false;
+        }
+        if(ttl < 0)
+            this:kill;
+        ttl --;
+
+        if(moveDelay > 0) {
+            moveDelay --;
+            this.x = lerp(moveX as real, x as real, moveDelay / 60.) as int;
+            this.y = lerp(moveY as real, y as real, moveDelay / 60.) as int;
+        }
+        else {
+            moveDelay = 60;
+            moveX, moveY = rand(128 - 50, 128 + 50), rand(20, 50);
+            x = this.x;
+            y = this.y;
+        }
+
+        if(shotDelay > 0) {
+            shotDelay --;
+        }
+        else {
+            shotDelay = 10;
+            loop(i, 10)
+                enmShot(this.x, this.y, i * 36., i + 1.);
+        }
+        circle(this.x, this.y, 10, true, 10);
+        yield
+    }
+}
+
+task enmShot(int x, int y, real angle, real speed) {
+    bool grazed?;
+    loop {
+        x += (cos(rad(angle)) * speed) as int;
+        y += (sin(rad(angle)) * speed) as int;
+        if(y > 192 or y < 0 or x < 0 or x > 256)
+            die
+        if(abs(x - px) < 3 and abs(y - py) < 3 and not playerHurt?) {
+            playerHurt? = true;
+            die
+        }
+        else if(abs(x - px) < 8 and abs(y - py) < 8 and not playerHurt? and not grazed?) {
+            grazes ++;
+            grazed? = true;
+        }
+        circle(x, y, 3, true, cond(grazed?, 10, 9));
+        yield
+    }
+}
+
+task playerShot(int x, int y, int dir) {
+    loop {
+        x += dir;
+        y -= 8;
+        if(y < 0)
+            die
+
+        for(enm, enms) {
+            if(abs(x - enm.x) < 10 and abs(y - enm.y) < 10) {
+                enm.hurt? = true;
+                loop(i, 10) {
+                    circle(x, y, 1 + (i / 3), false, 8);
+                    yield
+                }
+                die
+            }
+        }
+        circle(x, y, 1, true, 8);
+        yield
+    }
+}
+
+int px, py = 128;
+bool playerHurt?;
+task player() {
+    int shotDelay = 0;
+
+    loop {
+        if(playerHurt?) {
+            deaths ++;
+            loop(i, 30) {
+                circle(px, py, 2 + (i / 5), false, rand(2, 15));
+                yield
+            }
+            px, py = 128;
+            playerHurt? = false;
+        }
+        if(py > 2 and Button.up:held?)
+            py -= 2;
+        if(py < 190 and Button.down:held?)
+            py += 2;
+        if(px > 2 and Button.left:held?)
+            px -= 2;
+        if(px < 254 and Button.right:held?)
+            px += 2;
+
+        if(shotDelay > 0) {
+            shotDelay --;
+        }
+
+        if(shotDelay == 0 and Button.a:held?) {
+            playerShot(px, py, -1);
+            playerShot(px, py, 0);
+            playerShot(px, py, 1);
+            shotDelay = 5;
+        }
+
+        circle(px, py, 2, true, 7);
+        yield
+    }
+}*/
+/*
+event app() {
+    var icon = @Image(24, 24);
+    icon.set(0, 0, [
+" 0000000000000000000000 ",
+"022222222222222222222220",
+"022222222222222222222220",
+"033333333333333333333330",
+"033333333333333333333330",
+"033333333333333333333330",
+"033333333333333333333330",
+"033333333333333333333330",
+"033333333333333333333330",
+"033333333333333333333330",
+"033333333333333333333330",
+"033333333333333333333330",
+"033333333333333333333330",
+"033333333333333333333330",
+"033333333333333333333330",
+"033333333333333333333330",
+"033333333333333333333330",
+"033333333333333333333330",
+"033333333333333333333330",
+"033333333333333333333330",
+"043333333333333333333340",
+"044444444444444444444440",
+"044444444444444444444440",
+" 0000000000000000000000 ",
+    ]);
+
+    loop yield {
+        clear(7);
+        rectangle(0, 0, 256, 13, true, 1);
+        icon.draw(20, 20);
+        print("Bonjour", 20, 50);
+        color(1);
+        print("yooo");
+        print("yooo");
+        time().print(0, 0, 7);
+    }
+}*/

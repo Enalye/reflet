@@ -1,0 +1,52 @@
+var colorPick: int;
+
+export task img {
+    loop yield {
+        clear(5);
+
+        rectangle(8, 8, 65, 65, false, 1);
+
+        var originX = 100;
+        var originY = 20;
+        var sz = 20;
+
+        rectangle(originX, originY, originX + 4 * sz + 1, originY + 4 * sz + 1, false, 0);
+        for(i, range(0, 15)) {
+            var x = originX + 1 + (i % 4) * sz;
+            var y = originY + 1 + (i / 4) * sz;
+            rectangle(x, y, x + sz - 1, y + sz - 1, true, i);
+        }
+
+        {
+            var x = originX + 1 + (colorPick % 4) * sz;
+            var y = originY + 1 + (colorPick / 4) * sz;
+            rectangle(x - 2, y - 2, x + sz + 1, y + sz + 1, false, 0);
+            rectangle(x - 1, y - 1, x + sz, y + sz, false, 7);
+        }
+
+        if(isPressed(Button.up)) {
+            colorPick -= 4;
+            if(colorPick < 0)
+                colorPick += 16;
+        }
+        else if(isPressed(Button.down)) {
+            colorPick += 4;
+            if(colorPick > 15)
+                colorPick -= 16;
+        }
+        
+
+        if(isPressed(Button.left)) {
+            if(colorPick % 4 != 0)
+                colorPick --;
+            else
+                colorPick += 3;
+        }
+        else if(isPressed(Button.right)) {
+            if(colorPick % 4 != 3)
+                colorPick ++;
+            else
+                colorPick -= 3;
+        }
+    }
+}

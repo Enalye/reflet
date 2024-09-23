@@ -1,0 +1,89 @@
+{
+    "authors": [
+        "enalye"
+    ],
+    "copyright": "Copyright © 2024, enalye",
+    "description": "Calque",
+    "license": "Zlib",
+    "name": "reflet",
+    "dependencies": {
+        "bindbc-sdl": "~>1.4.2",
+        "grimoire": {
+            "path": "grimoire"
+        }
+    },
+    "subConfigurations": {
+        "bindbc-sdl": "static"
+    },
+    "versions": [
+        "BindSDL_Static",
+        "SDL_2_26"
+    ],
+    "lflags-posix": [
+        "-L-Llibs/$PLATFORM/$ARCH/",
+        "-L-lz"
+    ],
+    "libs-posix": [
+        "SDL2"
+    ],
+    "libs-windows": [
+        "libs/$PLATFORM/$ARCH/SDL2"
+    ],
+    "targetPath": "bin",
+    "targetType": "executable",
+    "workingDirectory": ".",
+    "buildTypes": {
+        "unittest": {
+            "buildOptions": [
+                "unittests",
+                "debugMode",
+                "debugInfo"
+            ]
+        },
+        "debug": {
+            "buildOptions": [
+                "debugMode",
+                "debugInfo"
+            ]
+        },
+        "release": {
+            "buildOptions": [
+                "releaseMode",
+                "optimize",
+                "inline",
+                "noBoundsCheck"
+            ]
+        }
+    },
+    "configurations": [
+        {
+            "name": "linux-build",
+            "targetName": "reflet-dbg",
+            "platforms": [
+                "linux"
+            ]
+        },
+        {
+            "name": "windows-build",
+            "targetName": "reflet-dbg",
+            "dflags": [
+                "-gf"
+            ],
+            "platforms": [
+                "windows"
+            ]
+        },
+        {
+            "name": "windows-release",
+            "targetName": "reflet",
+            "targetPath": "export",
+            "platforms": [
+                "windows"
+            ],
+            "lflags": [
+                "-subsystem:windows",
+                "-entry:mainCRTStartup"
+            ]
+        }
+    ]
+}

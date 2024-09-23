@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/reflet
+reflet.so
+reflet.dylib
+reflet.dll
+reflet.a
+reflet.lib
+reflet-test-*
+*.exe
+*.pdb
+*.o
+*.obj
+*.lst
