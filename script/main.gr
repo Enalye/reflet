@@ -2,21 +2,22 @@ import "img.gr"
 
 event app() {
     //img();
-    clear(0);
 
     loop yield {
-        //if(isPressed(Button.up)) {
-            circle(getMouseX(), getMouseY(), 20, true, 2);
-       // }
+    //clear(0);
+    //print(isUp(Key.a));
+        if(isUp(Key.a)) {
+            circle(getMouse(), 2, true, 2);
+        }
 
-    /*print("0123456789AÁÀÂÄÆBCÇĈDEÉÈÊËFGĜHĤIÍÌÎÏJĴKLMN", 0, 0, 7);
+    //print("0123456789AÁÀÂÄÆBCÇĈDEÉÈÊËFGĜHĤIÍÌÎÏJĴKLMN", 0, 0, 7);
 
-    print("OÓÒÔÖŒPQRSŜTUÚÙÛÜŬVWXYZ", 0, 15, 7);
-    print("aáàâäæbcçĉdeéèêëfgĝhĥiíìîïjĵk", 0, 30, 7);
-    print("lmnoóòôöœpqrsŝtuúùûüŭvwxyz", 0, 45, 7);
-    print("’.…,;:!?+-* /=≠()[]«»°%", 0, 60, 7);
+    //print("OÓÒÔÖŒPQRSŜTUÚÙÛÜŬVWXYZ", 0, 15, 7);
+    //print("aáàâäæbcçĉdeéèêëfgĝhĥiíìîïjĵk", 0, 30, 7);
+    //print("lmnoóòôöœpqrsŝtuúùûüŭvwxyz", 0, 45, 7);
+    //print("’.…,;:!?+-* /=≠()[]«»°%", 0, 60, 7);
 
-    print(getMouseX() ~ ", " ~ getMouseY());*/
+    print(getMouseX() ~ ", " ~ getMouseY());
     }
     
     //lmnoóòôöœpqrsŝtuúùûüŭvwxyz’.…,;:!?+-* /=≠()[]«»°%", 0, 0, 7);
