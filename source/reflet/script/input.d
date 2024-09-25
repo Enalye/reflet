@@ -12,6 +12,8 @@ void loadInputLibrary(GrModule library) {
     GrType keyType = library.addEnum("Key", grNativeEnum!Key);
     GrType btnType = library.addEnum("Button", grNativeEnum!Button);
 
+    library.addFunction(&_setCapture, "setCapture", [grBool]);
+
     library.addFunction(&_getMouse, "getMouse", [], [grInt, grInt]);
     library.addFunction(&_getMouseX, "getMouseX", [], [grInt]);
     library.addFunction(&_getMouseY, "getMouseY", [], [grInt]);
@@ -25,6 +27,10 @@ void loadInputLibrary(GrModule library) {
     library.addFunction(&_isHeld_key, "isHeld", [keyType], [grBool]);
     library.addFunction(&_isHeld_btn, "isHeld", [btnType], [grBool]);
 
+}
+
+private void _setCapture(GrCall call) {
+    setInputCapture(call.getBool(0));
 }
 
 private void _isDown_key(GrCall call) {

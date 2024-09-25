@@ -37,6 +37,8 @@ private {
     SDL_Texture* _screenBuffer;
     SDL_Surface* _icon;
     ubyte[CANVAS_HEIGHT][CANVAS_WIDTH] _screen;
+    bool _inputCapture = false;
+    bool _isRendererDirty = false;
 
     /*
     Flag 0b1 -> Pressé ou non
@@ -89,6 +91,10 @@ int getMouseY() {
     return _mouseY;
 }
 
+void setInputCapture(bool inputCapture_) {
+    _inputCapture = inputCapture_;
+}
+
 /// Capture les interruptions.
 private extern (C) void _signalHandler(int sig) nothrow @nogc @system {
     cast(void) sig;
@@ -111,6 +117,10 @@ extern (Windows) LRESULT _keyboardHookCallback(int nCode, WPARAM wParam, LPARAM 
                 _keys[keyboardData.vkCode] = 0b10;
             }
         }
+
+        if (_inputCapture) {
+            return 1;
+        }
     }
 
     return CallNextHookEx(_keyboardHook, nCode, wParam, lParam);
@@ -118,6 +128,8 @@ extern (Windows) LRESULT _keyboardHookCallback(int nCode, WPARAM wParam, LPARAM 
 
 extern (Windows) LRESULT _mouseHookCallback(int nCode, WPARAM wParam, LPARAM lParam) nothrow {
     if (nCode >= 0) {
+        bool ignore;
+
         switch (wParam) {
         case WM_LBUTTONDOWN:
             _buttons[0] = 0b11;
@@ -132,7 +144,12 @@ extern (Windows) LRESULT _mouseHookCallback(int nCode, WPARAM wParam, LPARAM lPa
             _buttons[1] = 0b10;
             break;
         default:
+            ignore = true;
             break;
+        }
+
+        if (_inputCapture && !ignore) {
+            return 1;
         }
     }
 
@@ -140,12 +157,12 @@ extern (Windows) LRESULT _mouseHookCallback(int nCode, WPARAM wParam, LPARAM lPa
 }
 
 private void _createHook() {
-    _keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, &_keyboardHookCallback, null, 0);
+    //_keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, &_keyboardHookCallback, null, 0);
     if (!_keyboardHook) {
         writeln("impossible de paramétrer le hook clavier");
     }
 
-    _mouseHook = SetWindowsHookEx(WH_MOUSE_LL, &_mouseHookCallback, null, 0);
+    //_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, &_mouseHookCallback, null, 0);
     if (!_mouseHook) {
         writeln("impossible de paramétrer le hook souris");
     }
@@ -231,8 +248,23 @@ void startup() {
     }
     SDL_CaptureMouse(true);
 
-    while (_fetchEvents()) {
-        /*if (bytecode && getButtonDown(KeyButton.f5)) {
+    _tickStartFrame = Clock.currStdTime();
+    float accumulator = 0f;
+
+    while (_isRunning) {
+        long deltaTicks = Clock.currStdTime() - _tickStartFrame;
+        double deltatime = (cast(float)(deltaTicks) / 10_000_000f) * FRAME_RATE;
+        float currentFps = (deltatime == .0f) ? .0f : (10_000_000f / cast(float)(deltaTicks));
+        _tickStartFrame = Clock.currStdTime();
+
+        accumulator += deltatime;
+
+        if (!_fetchEvents()) {
+            break;
+        }
+
+        while (accumulator >= 1f) {
+            /*if (bytecode && getButtonDown(KeyButton.f5)) {
             _engine = new GrEngine;
             _engine.addLibrary(stdlib);
             _engine.addLibrary(brumelib);
@@ -261,34 +293,44 @@ void startup() {
             }
         }*/
 
-        if (_engine) {
-            if (_engine.hasTasks)
-                _engine.process();
+            if (_engine) {
+                if (_engine.hasTasks)
+                    _engine.process();
 
-            if (_engine.isPanicking()) {
-                writeln("panique: " ~ _engine.panicMessage);
-                foreach (trace; _engine.stackTraces) {
-                    writeln("[", trace.pc, "] dans ", trace.name, " à ",
-                        trace.file, "(", trace.line, ",", trace.column, ")");
-                    _engine = null;
+                if (_engine.isPanicking()) {
+                    writeln("panique: " ~ _engine.panicMessage);
+                    foreach (trace; _engine.stackTraces) {
+                        writeln("[", trace.pc, "] dans ", trace.name, " à ",
+                            trace.file, "(", trace.line, ",", trace.column, ")");
+                        _engine = null;
+                    }
                 }
             }
-        }
 
-        for (int i; i < 0xff; ++i) {
-            _keys[i] &= 0b01;
+            for (int i; i < 0xff; ++i) {
+                _keys[i] &= 0b01;
+            }
+            _buttons[0] &= 0b01;
+            _buttons[1] &= 0b01;
+
+            import std.conv : to;
+
+            clearScreen(0);
+            printText(to!string(currentFps), 0, 0, 5);
+
+            _isRendererDirty = true;
+
+            accumulator -= 1f;
         }
-        _buttons[0] &= 0b01;
-        _buttons[1] &= 0b01;
 
         _renderWindow();
-
+        /*
         long deltaTicks = Clock.currStdTime() - _tickStartFrame;
         if (deltaTicks < (10_000_000 / FRAME_RATE))
             Thread.sleep(dur!("hnsecs")((10_000_000 / FRAME_RATE) - deltaTicks));
 
         deltaTicks = Clock.currStdTime() - _tickStartFrame;
-        _tickStartFrame = Clock.currStdTime();
+        _tickStartFrame = Clock.currStdTime();*/
     }
 
     _destroyWindow();
@@ -312,23 +354,32 @@ void _setWindowColorKey(SDL_Window* window) {
     SDL_SysWMinfo wmInfo;
     SDL_VERSION(&wmInfo.version_);
     SDL_GetWindowWMInfo(window, &wmInfo);
-    HWND hWnd = wmInfo.info.win.window;
-    SetWindowLong(hWnd, GWL_EXSTYLE, GetWindowLong(hWnd,
-            GWL_EXSTYLE) | WS_EX_LAYERED | WS_EX_TRANSPARENT);
+    HWND handle = wmInfo.info.win.window;
+    SetWindowLong(handle, GWL_EXSTYLE, GetWindowLong(handle,
+            GWL_EXSTYLE) | WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT);
 
     uint colorKey = _palette[0];
     COLORREF winColor = RGB((colorKey & 0xff0000) >> 16, (colorKey & 0xff00) >> 8, colorKey & 0xff);
-    SetLayeredWindowAttributes(hWnd, winColor, 0, LWA_COLORKEY);
+    SetLayeredWindowAttributes(handle, winColor, 0, LWA_COLORKEY);
+
 }
 
 /// Create the application window.
 private void _initWindow() {
-    enforce(SDL_Init(SDL_INIT_EVERYTHING) == 0,
-        "la sdl n'a pas pu s'initialiser: " ~ fromStringz(SDL_GetError()));
-
+    enforce(SDL_Init(0) == 0, "la sdl n'a pas pu s'initialiser: " ~ fromStringz(SDL_GetError()));
+    /*
     enforce(SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT,
-            SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_BORDERLESS,
-            &_window, &_renderer) != -1, "l'initialization de la fenêtre a échouée");
+            SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC |
+            SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_BORDERLESS | SDL_WINDOW_SKIP_TASKBAR,
+            &_window, &_renderer) != -1, "l'initialization de la fenêtre a échouée");*/
+
+    _window = SDL_CreateWindow(toStringz("reflet"), 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+        SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_BORDERLESS | SDL_WINDOW_SKIP_TASKBAR);
+    enforce(_window, "l'initialization de la fenêtre a échouée");
+
+    _renderer = SDL_CreateRenderer(_window, -1,
+        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    enforce(_renderer, "l'initialization de la fenêtre a échouée");
 
     _screenBuffer = SDL_CreateTexture(_renderer, SDL_PIXELFORMAT_RGBA8888,
         SDL_TEXTUREACCESS_STREAMING, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -336,7 +387,6 @@ private void _initWindow() {
     SDL_RenderSetLogicalSize(_renderer, CANVAS_WIDTH, CANVAS_HEIGHT);
     _setWindowColorKey(_window);
 
-    setWindowTitle("Brume");
 }
 
 /// Cleanup the application window.
@@ -371,25 +421,28 @@ void setWindowTitle(string title) {
 
 /// Render everything on screen.
 private void _renderWindow() {
-    uint* pixels;
-    int pitch;
-    if (SDL_LockTexture(_screenBuffer, null, cast(void**)&pixels, &pitch) == 0) {
-        for (uint y; y < CANVAS_HEIGHT; ++y) {
-            for (uint x; x < CANVAS_WIDTH; ++x) {
-                ubyte colorId = _screen[x][y];
-                pixels[y * CANVAS_WIDTH + x] = (_palette[colorId] << 8);
+    if (_isRendererDirty) {
+        uint* pixels;
+        int pitch;
+        _isRendererDirty = false;
+        if (SDL_LockTexture(_screenBuffer, null, cast(void**)&pixels, &pitch) == 0) {
+            for (uint y; y < CANVAS_HEIGHT; ++y) {
+                for (uint x; x < CANVAS_WIDTH; ++x) {
+                    ubyte colorId = _screen[x][y];
+                    pixels[y * CANVAS_WIDTH + x] = (_palette[colorId] << 8);
+                }
             }
+            SDL_UnlockTexture(_screenBuffer);
         }
-        SDL_UnlockTexture(_screenBuffer);
-    }
-    else {
-        import std.stdio;
+        else {
+            import std.stdio;
 
-        writeln("erreur: ", fromStringz(SDL_GetError()));
-    }
+            writeln("erreur: ", fromStringz(SDL_GetError()));
+        }
 
-    SDL_Rect destRect = {0, 0, CANVAS_WIDTH, CANVAS_HEIGHT};
-    SDL_RenderCopy(_renderer, _screenBuffer, null, &destRect);
+        SDL_Rect destRect = {0, 0, CANVAS_WIDTH, CANVAS_HEIGHT};
+        SDL_RenderCopy(_renderer, _screenBuffer, null, &destRect);
+    }
 
     SDL_RenderPresent(_renderer);
 }

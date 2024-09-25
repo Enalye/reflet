@@ -3,13 +3,32 @@ import "img.gr"
 event app() {
     //img();
 
+    var isCaptured = false;
+    var penColor = 1;
+
     loop yield {
-    //clear(0);
-    //print(isUp(Key.a));
-        if(isUp(Key.a)) {
-            circle(getMouse(), 2, true, 2);
+        //clear(0);
+        //print(isUp(Key.a));
+        if(isDown(Key.scroll)) {
+            isCaptured = !isCaptured;
+            setCapture(isCaptured);
         }
 
+        if(isCaptured) {
+            if(isDown(Key.up) && penColor < 16) {
+                penColor ++;
+                //color(penColor);
+            }
+            else if(isDown(Key.down) && penColor > 1) {
+                penColor --;
+                //color(penColor);
+            }
+            if(isHeld(Button.left)) {
+                pixel(getMouse(), penColor);
+                //circle(getMouse(), 1, true, 3);
+            }
+        }
+        
     //print("0123456789AÁÀÂÄÆBCÇĈDEÉÈÊËFGĜHĤIÍÌÎÏJĴKLMN", 0, 0, 7);
 
     //print("OÓÒÔÖŒPQRSŜTUÚÙÛÜŬVWXYZ", 0, 15, 7);

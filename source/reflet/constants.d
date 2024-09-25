@@ -15,6 +15,11 @@ enum PALETTE_SIZE = 16;
 enum TRANSPARENCY_VALUE = 0xFF;
 enum CONTROLLER_DEAD_ZONE = 0.35;
 
+enum Audio_SampleRate = 48_000;
+enum Audio_FrameSize = 128;
+enum Audio_Channels = 2;
+enum Audio_BufferSize = Audio_FrameSize * Audio_Channels;
+
 enum FONT_WIDTH = 5;
 enum FONT_HEIGHT = 11;
 enum FONT_ADVANCE = 6;
